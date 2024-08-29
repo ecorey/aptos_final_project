@@ -157,20 +157,39 @@ module SkyTrade::air_rights {
         // });
     }
 
+   
+
+
+
+
+    /// Public function to get a parcel by its index
+    public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {
+        let registry = borrow_global<AirRightsRegistry>(account);
+        get_parcel_index(&registry.parcels, parcel_id)
+    }
+
+
+
+    /// Helper function to get the index of a parcel in a vector
     fun get_parcel_index(parcels: &vector<AirRightsParcel>, parcel_id: u64): u64 {
         let len = vector::length(parcels);
-        let i = 0u64;
+        let i = 0;
 
         while (i < len) {
             let parcel = vector::borrow(parcels, i);
             if (parcel.id == parcel_id) {
-                return i
+                return i;
             };
             i = i + 1;
         };
 
-        abort 10 // Parcel not found
+        abort 10 
     }
+
+
+
+
+
 }
 
 
