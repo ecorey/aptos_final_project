@@ -5,6 +5,9 @@ module SkyTrade::air_rights {
     use aptos_framework::event;
     use aptos_framework::account;
 
+
+
+
     /// Struct representing an Air Rights Parcel
     struct AirRightsParcel has key, store {
         id: u64,
@@ -14,17 +17,16 @@ module SkyTrade::air_rights {
         is_listed: bool,
     }
 
+
     /// Resource holding all air rights for a particular account
     struct AirRightsRegistry has key {
         next_id: u64,
         parcels: vector<AirRightsParcel>,
-        // created_events: event::EventHandle<AirRightsCreatedEvent>,
-        // transferred_events: event::EventHandle<AirRightsTransferredEvent>,
-        // listed_events: event::EventHandle<AirRightsListedEvent>,
-        // delisted_events: event::EventHandle<AirRightsDelistedEvent>,
+        
     }
 
     /// Events for logging
+    #[event]
     struct AirRightsCreatedEvent has drop, store {
         parcel_id: u64,
         owner: address,
@@ -32,40 +34,40 @@ module SkyTrade::air_rights {
         price_per_cubic_foot: u64,
     }
 
+    #[event]
     struct AirRightsTransferredEvent has drop, store {
         from: address,
         to: address,
         parcel_id: u64,
     }
 
+    #[event]
     struct AirRightsListedEvent has drop, store {
         owner: address,
         parcel_id: u64,
         price_per_cubic_foot: u64,
     }
 
+    #[event]
     struct AirRightsDelistedEvent has drop, store {
         owner: address,
         parcel_id: u64,
     }
 
+
     /// Initialize the contract for the caller account
-    // CREATE RESOURCE FOR ACCOUNT
-    // TEST FAILURE 
     public entry fun initialize(account: &signer) {
 
         let registry = AirRightsRegistry {
             next_id: 0,
             parcels: vector::empty(),
-            // created_events: account::new_event_handle<AirRightsCreatedEvent>(account),
-            // transferred_events: account::new_event_handle<AirRightsTransferredEvent>(account),
-            // listed_events: account::new_event_handle<AirRightsListedEvent>(account),
-            // delisted_events: account::new_event_handle<AirRightsDelistedEvent>(account),
+            
         };
 
         move_to(account, registry);
 
     }
+
 
 
     /// Create a new air rights parcel
@@ -89,13 +91,21 @@ module SkyTrade::air_rights {
 
         vector::push_back(&mut registry.parcels, parcel);
 
-        // event::emit_event(&mut registry.created_events, AirRightsCreatedEvent {
-        //     parcel_id,
-        //     owner: account_address,
-        //     cubic_feet,
-        //     price_per_cubic_foot,
-        // });
+
+        let event = AirRightsCreatedEvent {
+            parcel_id,
+            owner: account_address,
+            cubic_feet,
+            price_per_cubic_foot,
+        };
+
+        event::emit(event);
+
+
+        
     }
+
+
 
     /// Transfer ownership of an air rights parcel
     public entry fun transfer_air_rights(from: &signer, to: address, parcel_id: u64) acquires AirRightsRegistry {
@@ -106,15 +116,17 @@ module SkyTrade::air_rights {
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
 
         assert!(parcel.owner == from_address, 4);
-        assert!(!parcel.is_listed, 5);  // Ensure the parcel is not listed for sale
+        assert!(!parcel.is_listed, 5);  
 
         parcel.owner = to;
 
-        // event::emit_event(&mut registry.transferred_events, AirRightsTransferredEvent {
-        //     from: from_address,
-        //     to,
-        //     parcel_id,
-        // });
+        let event =  AirRightsTransferredEvent {
+            from: from_address,
+            to,
+            parcel_id,
+        };
+
+        event::emit(event);
     }
 
     /// List an air rights parcel for sale
@@ -131,11 +143,13 @@ module SkyTrade::air_rights {
         parcel.is_listed = true;
         parcel.price_per_cubic_foot = price_per_cubic_foot;
 
-        // event::emit_event(&mut registry.listed_events, AirRightsListedEvent {
-        //     owner: account_address,
-        //     parcel_id,
-        //     price_per_cubic_foot,
-        // });
+        let event = AirRightsListedEvent {
+            owner: account_address,
+            parcel_id,
+            price_per_cubic_foot,
+        };
+
+        event::emit(event);
     }
 
     /// Delist an air rights parcel
@@ -151,10 +165,14 @@ module SkyTrade::air_rights {
 
         parcel.is_listed = false;
 
-        // event::emit_event(&mut registry.delisted_events, AirRightsDelistedEvent {
-        //     owner: account_address,
-        //     parcel_id,
-        // });
+        let event = AirRightsDelistedEvent {
+            owner: account_address,
+            parcel_id,
+        };
+
+        event::emit(event);
+
+
     }
 
    
@@ -163,10 +181,12 @@ module SkyTrade::air_rights {
 
 
     /// Public function to get a parcel by its index
+    #[test_only]
     public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {
         let registry = borrow_global<AirRightsRegistry>(account);
         get_parcel_index(&registry.parcels, parcel_id)
     }
+
 
 
 
@@ -194,5 +214,4 @@ module SkyTrade::air_rights {
 
 
 
-// Add Costs
-// Add Tests
+
