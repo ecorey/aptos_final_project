@@ -4,12 +4,9 @@ version = "1.0.0"
 authors = []
 
 [addresses]
+SkyTrade = "0x66ec02146331d3a4a3103587a76d77f768d4f81b2ed4e68bb7d84d1f2331008a"
 
-[dev-addresses]
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "main" }
 
-[dependencies.AptosFramework]
-git = "https://github.com/aptos-labs/aptos-core.git"
-rev = "mainnet"
-subdir = "aptos-move/framework/aptos-framework"
 
-[dev-dependencies]
