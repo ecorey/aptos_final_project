@@ -7,7 +7,7 @@ module SkyTrade::air_rights {
 
 
 
-
+    // STRUCTS
     /// Struct representing an Air Rights Parcel
     struct AirRightsParcel has key, store {
         id: u64,
@@ -25,7 +25,9 @@ module SkyTrade::air_rights {
         
     }
 
-    /// Events for logging
+
+
+    /// EVENTS  
     #[event]
     struct AirRightsCreatedEvent has drop, store {
         parcel_id: u64,
@@ -55,6 +57,8 @@ module SkyTrade::air_rights {
     }
 
 
+
+    //FUNCTIONS
     /// Initialize the contract for the caller account
     public entry fun initialize(account: &signer) {
 
@@ -129,6 +133,8 @@ module SkyTrade::air_rights {
         event::emit(event);
     }
 
+
+
     /// List an air rights parcel for sale
     public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
@@ -151,6 +157,8 @@ module SkyTrade::air_rights {
 
         event::emit(event);
     }
+
+
 
     /// Delist an air rights parcel
     public entry fun delist_air_rights(account: &signer, parcel_id: u64) acquires AirRightsRegistry {
@@ -179,7 +187,7 @@ module SkyTrade::air_rights {
 
 
 
-
+    // TEST FUNCTIONS
     /// Public function to get a parcel by its index
     #[test_only]
     public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {

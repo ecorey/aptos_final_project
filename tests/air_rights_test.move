@@ -74,13 +74,4 @@ module SkyTrade::air_rights_test {
 
 
 
-
-
-
-
-
-
-
-
-
 }
