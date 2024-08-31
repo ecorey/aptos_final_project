@@ -9,6 +9,8 @@ module SkyTrade::air_rights {
 
 
 
+
+
     // STRUCTS
     /// Struct representing an Air Rights Parcel
     struct AirRightsParcel has key, store {
@@ -26,6 +28,7 @@ module SkyTrade::air_rights {
         parcels: vector<AirRightsParcel>,
         
     }
+
 
 
 
@@ -57,6 +60,8 @@ module SkyTrade::air_rights {
         owner: address,
         parcel_id: u64,
     }
+
+
 
 
 
@@ -113,7 +118,7 @@ module SkyTrade::air_rights {
 
 
     /// Sell air rights parcel
-    public entry fun sell_air_rights(
+    public entry fun sell_and_transfer_air_rights(
         from: &signer, 
         buyer: &signer, 
         parcel_id: u64, 

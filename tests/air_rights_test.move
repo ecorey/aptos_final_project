@@ -59,7 +59,7 @@ module SkyTrade::air_rights_test {
 
         // Test the sell_air_rights function
         let sale_price = 100; 
-        air_rights::sell_air_rights(account_one, account_two, 0, sale_price);
+        air_rights::sell_and_transfer_air_rights(account_one, account_two, 0, sale_price);
 
 
         // Clean up
@@ -95,5 +95,10 @@ module SkyTrade::air_rights_test {
 
         // Delist the air rights parcel
         air_rights::delist_air_rights(account_one, 0);
+
     }
+
+
+
+
 }
