@@ -4,6 +4,8 @@ module SkyTrade::air_rights {
     use std::vector;
     use aptos_framework::event;
     use aptos_framework::account;
+    use aptos_framework::coin::{Self, Coin};
+    use aptos_framework::aptos_coin::AptosCoin;
 
 
 
@@ -110,28 +112,50 @@ module SkyTrade::air_rights {
     }
 
 
+    /// Sell air rights parcel
+    public entry fun sell_air_rights(
+        from: &signer, 
+        buyer: &signer, 
+        parcel_id: u64, 
+        price: u64
+    ) acquires AirRightsRegistry {
 
-    /// Transfer ownership of an air rights parcel
-    public entry fun transfer_air_rights(from: &signer, to: address, parcel_id: u64) acquires AirRightsRegistry {
         let from_address = signer::address_of(from);
-        let registry = borrow_global_mut<AirRightsRegistry>(from_address);
+        let buyer_address = signer::address_of(buyer);
 
+        // Verify the parcel ownership and that it is listed for sale
+        let registry = borrow_global_mut<AirRightsRegistry>(from_address);
         let index = get_parcel_index(&registry.parcels, parcel_id);
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
 
         assert!(parcel.owner == from_address, 4);
-        assert!(!parcel.is_listed, 5);  
+        assert!(parcel.is_listed, 5);  // Ensure the parcel is listed for sale
 
-        parcel.owner = to;
 
-        let event =  AirRightsTransferredEvent {
+        // Ensure the buyer has a CoinStore published for AptosCoin
+        if (!coin::is_account_registered<AptosCoin>(buyer_address)) {
+            coin::register<AptosCoin>(buyer);
+        };
+
+
+        // Withdraw the APT coins from the buyer's account and deposit them into the seller's account
+        let payment = coin::withdraw<AptosCoin>(buyer, price);
+        coin::deposit<AptosCoin>(from_address, payment);
+
+        // Transfer the ownership of the parcel from the seller to the buyer
+        parcel.owner = buyer_address;
+        parcel.is_listed = false;
+
+        let event = AirRightsTransferredEvent {
             from: from_address,
-            to,
+            to: buyer_address,
             parcel_id,
         };
 
         event::emit(event);
     }
+
+
 
 
 
