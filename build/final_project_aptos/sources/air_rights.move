@@ -139,9 +139,9 @@ module SkyTrade::air_rights {
 
 
         // Ensure the buyer has a CoinStore published for AptosCoin
-        if (!coin::is_account_registered<AptosCoin>(buyer_address)) {
-            coin::register<AptosCoin>(buyer);
-        };
+        // if (!coin::is_account_registered<AptosCoin>(buyer_address)) {
+        //     coin::register<AptosCoin>(buyer);
+        // };
 
 
         // Withdraw the APT coins from the buyer's account and deposit them into the seller's account
@@ -253,3 +253,5 @@ module SkyTrade::air_rights {
 
 
 
+// ADD OBJECT
+// ADD FUNC TO TEST PRICE PER CUBIC FOOT AND PRICE BOUGHT MATCH
