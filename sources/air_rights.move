@@ -121,7 +121,7 @@ module SkyTrade::air_rights {
         from: &signer, 
         buyer: &signer, 
         parcel_id: u64, 
-        price: u64
+        provided_price: u64
     ) acquires AirRightsRegistry {
 
         let from_address = signer::address_of(from);
@@ -138,9 +138,16 @@ module SkyTrade::air_rights {
         assert!(parcel.is_listed, 5);  
 
 
+        // Calculate the expected price
+        let expected_price = parcel.cubic_feet * parcel.price_per_cubic_foot;
+
+
+        // Ensure the provided price matches the expected price
+        assert!(provided_price == expected_price, 11);
+
 
         // Withdraw the APT coins from the buyer's account and deposit them into the seller's account
-        let payment = coin::withdraw<AptosCoin>(buyer, price);
+        let payment = coin::withdraw<AptosCoin>(buyer, provided_price);
         coin::deposit<AptosCoin>(from_address, payment);
 
         // Transfer the ownership of the parcel from the seller to the buyer
@@ -155,7 +162,7 @@ module SkyTrade::air_rights {
 
         event::emit(event);
 
-        
+
     }
 
 
