@@ -3,8 +3,7 @@ module SkyTrade::air_rights {
     use std::signer;
     use std::vector;
     use aptos_framework::event;
-    use aptos_framework::account;
-    use aptos_framework::coin::{Self, Coin};
+    use aptos_framework::coin;
     use aptos_framework::aptos_coin::AptosCoin;
 
 
@@ -12,7 +11,7 @@ module SkyTrade::air_rights {
 
 
     // STRUCTS
-    /// Struct representing an Air Rights Parcel
+    // Struct representing an Air Rights Parcel
     struct AirRightsParcel has key, store {
         id: u64,
         owner: address,
@@ -22,7 +21,7 @@ module SkyTrade::air_rights {
     }
 
 
-    /// Resource holding all air rights for a particular account
+    // Resource holding all air rights for a particular account
     struct AirRightsRegistry has key {
         next_id: u64,
         parcels: vector<AirRightsParcel>,
@@ -32,7 +31,7 @@ module SkyTrade::air_rights {
 
 
 
-    /// EVENTS  
+    // EVENTS  
     #[event]
     struct AirRightsCreatedEvent has drop, store {
         parcel_id: u64,
@@ -66,7 +65,7 @@ module SkyTrade::air_rights {
 
 
     //FUNCTIONS
-    /// Initialize the contract for the caller account
+    // Initialize the contract for the caller account
     public entry fun initialize(account: &signer) {
 
         let registry = AirRightsRegistry {
@@ -81,7 +80,7 @@ module SkyTrade::air_rights {
 
 
 
-    /// Create a new air rights parcel
+    // Create a new air rights parcel
     public entry fun create_air_rights(account: &signer, cubic_feet: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
         let registry = borrow_global_mut<AirRightsRegistry>(account_address);
@@ -117,7 +116,7 @@ module SkyTrade::air_rights {
     }
 
 
-    /// Sell air rights parcel
+    // Sell air rights parcel
     public entry fun sell_and_transfer_air_rights(
         from: &signer, 
         buyer: &signer, 
@@ -166,7 +165,7 @@ module SkyTrade::air_rights {
 
 
 
-    /// List an air rights parcel for sale
+    // List an air rights parcel for sale
     public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
         let registry = borrow_global_mut<AirRightsRegistry>(account_address);
@@ -191,7 +190,7 @@ module SkyTrade::air_rights {
 
 
 
-    /// Delist an air rights parcel
+    // Delist an air rights parcel
     public entry fun delist_air_rights(account: &signer, parcel_id: u64) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
         let registry = borrow_global_mut<AirRightsRegistry>(account_address);
@@ -219,7 +218,7 @@ module SkyTrade::air_rights {
 
 
     // TEST HELPER FUNCTIONS
-    /// Public function to get a parcel by its index
+    // Public function to get a parcel by its index
     #[test_only]
     public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {
         let registry = borrow_global<AirRightsRegistry>(account);
@@ -229,7 +228,7 @@ module SkyTrade::air_rights {
 
 
 
-    /// Helper function to get the index of a parcel in a vector
+    // Helper function to get the index of a parcel in a vector
     fun get_parcel_index(parcels: &vector<AirRightsParcel>, parcel_id: u64): u64 {
         let len = vector::length(parcels);
         let i = 0;

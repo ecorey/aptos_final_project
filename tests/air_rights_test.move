@@ -2,13 +2,9 @@ module SkyTrade::air_rights_test {
 
 
     use std::signer;
-    use std::string;
-    use aptos_std::from_bcs;
-    use aptos_framework::account;
+    use aptos_framework::coin;
     use aptos_framework::aptos_account::create_account;
-    use aptos_framework::aptos_account;
     use aptos_framework::aptos_account::transfer;
-    use aptos_framework::coin::{Self, Coin, BurnCapability, MintCapability, is_coin_initialized};
     use aptos_framework::aptos_coin::{Self, AptosCoin};
     use SkyTrade::air_rights;
 
@@ -46,13 +42,13 @@ module SkyTrade::air_rights_test {
         // Initialize air rights
         air_rights::initialize(account_one);
 
-        // // Create air rights
+        // Create air rights
         let cubic_feet = 1000;
         let price_per_cubic_foot = 50;
         air_rights::create_air_rights(account_one, cubic_feet, price_per_cubic_foot);
 
 
-        // // List the air rights parcel for sale 
+        // List the air rights parcel for sale 
         air_rights::list_air_rights(account_one, 0, price_per_cubic_foot);
 
 
