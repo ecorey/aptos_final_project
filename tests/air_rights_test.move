@@ -70,7 +70,7 @@ module SkyTrade::air_rights_test {
 
 
 
-    // TEST SALES PRICE NOT MATCHING EXPECTED PRICE FAILURE
+    // TEST SALES PRICE NOT MATCHING EXPECTED PRICE, FAILURE
     #[test(core = @0x1, account_one = @0xCAFE, account_two = @0xBEEF)]
     #[expected_failure]
     fun test_failure_initialize_create_sell_air_rights(core: &signer, account_one: &signer, account_two: &signer) {
