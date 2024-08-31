@@ -1,3 +1,17 @@
+// ADJUSTMENTS MADE TO CONTRACT
+// Fixed Events to be emitted during function calls
+// Added Sell functions that accepts APT
+// Added price check for sell function
+// Added Tests for all functions
+
+
+
+
+
+//TODO
+// ADD OBJECTS and RESOURCES 
+
+
 module SkyTrade::air_rights {
 
     use std::signer;
@@ -257,5 +271,5 @@ module SkyTrade::air_rights {
 
 
 
-// ADD OBJECT
-// ADD FUNC TO TEST PRICE PER CUBIC FOOT AND PRICE BOUGHT MATCH
+
+
