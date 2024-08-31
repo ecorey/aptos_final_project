@@ -1,8 +1,8 @@
 // ADJUSTMENTS MADE TO CONTRACT
-// Fixed Events to be emitted during function calls
-// Added Sell functions that accepts APT
+// Adjusted events to be emitted during function calls
+// Added sell functions that accepts APT
 // Added price check for sell function
-// Added Tests for all functions
+// Added tests for all functions and test helper functions
 
 
 
@@ -10,6 +10,7 @@
 
 //TODO
 // ADD OBJECTS and RESOURCES 
+
 
 
 module SkyTrade::air_rights {
