@@ -74,7 +74,7 @@ module SkyTrade::air_rights_test {
 
 
     // TEST LIST/ DELIST AND PARCEL INDEX FUNCTIONS
-    #[test(account_one = @0x1)]
+    #[test(account_one = @0xCAFE)]
     fun test_list_delist_air_rights(account_one: &signer) {
         // Initialize the AirRightsRegistry
         air_rights::initialize(account_one);
