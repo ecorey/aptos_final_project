@@ -24,8 +24,6 @@ module SkyTrade::air_rights_test {
     fun test_initialize_create_sell_air_rights(core: &signer, account_one: &signer, account_two: &signer) {
         
 
-        // let account_one = from_bcs::to_address(x"0000000000000000000000000000000000000000000000000000000000000777");
-        // let account_two = from_bcs::to_address(x"0000000000000000000000000000000000000000000000000000000000000999");
 
         // Initialize the coin
         let (burn_cap, mint_cap) = aptos_framework::aptos_coin::initialize_for_test(core);
@@ -44,7 +42,6 @@ module SkyTrade::air_rights_test {
         assert!(coin::balance<AptosCoin>(signer::address_of(account_one)) == 500, 0);
 
 
-        
 
         // Initialize air rights
         air_rights::initialize(account_one);
@@ -59,7 +56,6 @@ module SkyTrade::air_rights_test {
         air_rights::list_air_rights(account_one, 0, price_per_cubic_foot);
 
 
-      
 
         // Test the sell_air_rights function
         let sale_price = 100; 

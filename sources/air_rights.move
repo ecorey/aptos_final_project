@@ -128,8 +128,10 @@ module SkyTrade::air_rights {
         let index = get_parcel_index(&registry.parcels, parcel_id);
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
 
+
+        // Check parcel ownership and listing status
         assert!(parcel.owner == from_address, 4);
-        assert!(parcel.is_listed, 5);  // Ensure the parcel is listed for sale
+        assert!(parcel.is_listed, 5);  
 
 
         // Ensure the buyer has a CoinStore published for AptosCoin
@@ -211,7 +213,7 @@ module SkyTrade::air_rights {
 
 
 
-    // TEST FUNCTIONS
+    // TEST HELPER FUNCTIONS
     /// Public function to get a parcel by its index
     #[test_only]
     public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {
