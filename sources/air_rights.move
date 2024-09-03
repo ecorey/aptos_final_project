@@ -9,7 +9,7 @@
 
 
 //TODO
-// ADD OBJECTS and RESOURCES 
+// CREATE OBJECT TO HOLD RESOURCES AND INIT FUNCTION
 
 
 
@@ -268,9 +268,3 @@ module SkyTrade::air_rights {
 
 
 }
-
-
-
-
-
-

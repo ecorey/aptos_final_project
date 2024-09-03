@@ -268,9 +268,3 @@ module SkyTrade::air_rights {
 
 
 }
-
-
-
-
-
-
