@@ -1,15 +1,12 @@
 // ADJUSTMENTS MADE TO CONTRACT
-// Adjusted events to be emitted during function calls
-// Added sell functions that accepts APT
-// Added price check for sell function
-// Added tests for all functions and test helper functions
+// AirRightsRegistry object holds parcel data
+// AirRightsRegistry object is created in the init function and owned by contract creator
+// AirRightsRegistry is a named object and cannot be deleted
+// AirRightsRegistry object accesible through object address so users can add a parcel or sell ext.
+// Parcel is created when added to the registry
+// Updated related functions and tests
 
 
-
-
-
-//TODO
-// CREATE OBJECT TO HOLD RESOURCES AND INIT FUNCTION
 
 
 
@@ -38,7 +35,7 @@ module SkyTrade::air_rights {
     }
 
 
-    // Resource holding all air rights for a particular account
+    // Object holding all AirRightsParcels 
     struct AirRightsRegistry has key {
         next_id: u64,
         parcels: vector<AirRightsParcel>,
@@ -79,16 +76,29 @@ module SkyTrade::air_rights {
 
 
 
-    // OBJECT INTERGRATION
-    const NAME: vector<u8> = b"AirRightsRegistryObject";
+    
+    
+
+
+    //FUNCTIONS
+    // Initialize the contract with the caller account
+    public fun init(account: &signer) {
+
+       create_object_to_hold_air_rights_registry(account);
+
+    }
+
+
+    // Create an object to hold the AirRightsRegistry object that is owned by the contract creator
+    const AIRRIGHTSREGISTRY: vector<u8> = b"AirRightsRegistryObject";
 
     entry fun create_object_to_hold_air_rights_registry(caller: &signer) {
 
         let caller_address = signer::address_of(caller);
         
-        let constructor_ref = object::create_named_object(caller, NAME);   
+        let constructor_ref = object::create_named_object(caller, AIRRIGHTSREGISTRY);   
 
-        // Create the AirRightsRegistry resource and store it in the object
+       
         let air_rights_registry = AirRightsRegistry {
             next_id: 0,
             parcels: vector::empty(),
@@ -103,30 +113,30 @@ module SkyTrade::air_rights {
 
      #[view]
     fun has_object(creator: address): bool {
-        let object_address = object::create_object_address(&creator, NAME);
+        let object_address = object::create_object_address(&creator, AIRRIGHTSREGISTRY);
         object_exists<0x1::object::ObjectCore>(object_address)
     }
 
 
 
     // Parcel is created and added to the air rights registry object
-    public entry fun add_parcel_to_air_rights_registry(caller: &signer, object_owner_address: address, cubic_feet: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry{
+    public entry fun add_parcel_to_air_rights_registry(caller: &signer, registry_address: address, cubic_feet: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry{
 
-        let object_address = object::create_object_address(&object_owner_address, NAME);
+        let object_address = object::create_object_address(&registry_address, AIRRIGHTSREGISTRY);
 
-        // Ensure the AirRightsRegistry exists in the object
+        // heck that the AirRightsRegistry exists in the object
         assert!(object_exists<AirRightsRegistry>(object_address), 1);
         
         // Borrow the AirRightsRegistry resource from the object
         let registry = borrow_global_mut<AirRightsRegistry>(object_address);
 
-        // Create the new parcel
+        // Create a new parcel
         let parcel_id = registry.next_id;
         registry.next_id = parcel_id + 1;
 
         let parcel = AirRightsParcel {
             id: parcel_id,
-            owner: signer::address_of(caller),  // The caller becomes the owner of the parcel
+            owner: signer::address_of(caller),  
             cubic_feet,
             price_per_cubic_foot,
             is_listed: false,
@@ -148,15 +158,6 @@ module SkyTrade::air_rights {
 
 
 
-    //FUNCTIONS
-    // Initialize the contract for the caller account
-    public fun init(account: &signer) {
-
-       create_object_to_hold_air_rights_registry(account);
-
-    }
-
-
 
   
 
@@ -166,11 +167,11 @@ module SkyTrade::air_rights {
         buyer: &signer, 
         parcel_id: u64, 
         provided_price: u64, 
-        object_owner_address: address
+        registry_address: address
     ) acquires AirRightsRegistry {
         let from_address = signer::address_of(from);
         let buyer_address = signer::address_of(buyer);
-        let object_address = object::create_object_address(&object_owner_address, NAME);
+        let object_address = object::create_object_address(&registry_address, AIRRIGHTSREGISTRY);
 
         // Ensure the AirRightsRegistry exists in the object
         assert!(object_exists<AirRightsRegistry>(object_address), 1);
@@ -216,10 +217,10 @@ module SkyTrade::air_rights {
 
 
     // List an air rights parcel for sale
-    public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64, object_owner_address: address) acquires AirRightsRegistry {
+    public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64, registry_address: address) acquires AirRightsRegistry {
         
         let account_address = signer::address_of(account);
-        let object_address = object::create_object_address(&object_owner_address, NAME);
+        let object_address = object::create_object_address(&registry_address, AIRRIGHTSREGISTRY);
 
         // Ensure the AirRightsRegistry exists in the object
         assert!(object_exists<AirRightsRegistry>(object_address), 1);
@@ -254,9 +255,9 @@ module SkyTrade::air_rights {
 
 
     // Delist an air rights parcel
-    public entry fun delist_air_rights(account: &signer, parcel_id: u64, object_owner_address: address) acquires AirRightsRegistry {
+    public entry fun delist_air_rights(account: &signer, parcel_id: u64, registry_address: address) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
-        let object_address = object::create_object_address(&object_owner_address, NAME);
+        let object_address = object::create_object_address(&registry_address, AIRRIGHTSREGISTRY);
 
         // Ensure the AirRightsRegistry exists in the object
         assert!(object_exists<AirRightsRegistry>(object_address), 1);
@@ -294,9 +295,9 @@ module SkyTrade::air_rights {
     // TEST HELPER FUNCTIONS
     // Public function to get a parcel by its index
     #[test_only]
-    public fun get_parcel_index_for_test(registry_owner_address: address, parcel_id: u64): u64 acquires AirRightsRegistry {
+    public fun get_parcel_index_for_test(registry_address: address, parcel_id: u64): u64 acquires AirRightsRegistry {
         
-        let object_address = object::create_object_address(&registry_owner_address, NAME);
+        let object_address = object::create_object_address(&registry_address, AIRRIGHTSREGISTRY);
 
         // Ensure the AirRightsRegistry exists in the object
         assert!(object_exists<AirRightsRegistry>(object_address), 1);
