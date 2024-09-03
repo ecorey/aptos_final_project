@@ -12,7 +12,7 @@ module SkyTrade::air_rights_test {
 
 
    
-
+    
 
 
     // TEST INITIALIZE, CREATE, SELL AIR RIGHTS

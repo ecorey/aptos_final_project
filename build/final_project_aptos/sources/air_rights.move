@@ -9,7 +9,7 @@
 
 
 //TODO
-// ADD OBJECTS and RESOURCES 
+// CREATE OBJECT TO HOLD RESOURCES AND INIT FUNCTION
 
 
 
@@ -20,6 +20,8 @@ module SkyTrade::air_rights {
     use aptos_framework::event;
     use aptos_framework::coin;
     use aptos_framework::aptos_coin::AptosCoin;
+    use aptos_framework::object;
+    use aptos_framework::object::object_exists;
 
 
 
@@ -78,6 +80,23 @@ module SkyTrade::air_rights {
 
 
 
+    const NAME: vector<u8> = b"AirRightsRegistryObject";
+
+    entry fun create_object_to_hold_air_rights_registry(caller: &signer) {
+
+        let caller_address = signer::address_of(caller);
+        
+        let constructor_ref = object::create_named_object(caller, NAME);        
+
+
+    }
+
+
+     #[view]
+    fun has_object(creator: address): bool {
+        let object_address = object::create_object_address(&creator, NAME);
+        object_exists<0x1::object::ObjectCore>(object_address)
+    }
 
     //FUNCTIONS
     // Initialize the contract for the caller account
