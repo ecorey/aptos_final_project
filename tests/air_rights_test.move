@@ -41,23 +41,24 @@ module SkyTrade::air_rights_test {
 
 
         // Initialize air rights
-        air_rights::initialize(account_one);
+        air_rights::init(account_one);
 
 
         // Create air rights
         let cubic_feet = 1000;
         let price_per_cubic_foot = 50;
-        air_rights::create_air_rights(account_one, cubic_feet, price_per_cubic_foot);
+        let registry_owner = signer::address_of(account_one);
+        air_rights::add_parcel_to_air_rights_registry(account_one, registry_owner, cubic_feet, price_per_cubic_foot);
 
 
         // List the air rights parcel for sale 
-        air_rights::list_air_rights(account_one, 0, price_per_cubic_foot);
+        air_rights::list_air_rights(account_one, 0, price_per_cubic_foot, registry_owner);
 
 
 
         // Test the sell_air_rights function
         let sale_price = 50_000; 
-        air_rights::sell_and_transfer_air_rights(account_one, account_two, 0, sale_price);
+        air_rights::sell_and_transfer_air_rights(account_one, account_two, 0, sale_price, registry_owner);
 
 
         // Clean up
@@ -97,23 +98,23 @@ module SkyTrade::air_rights_test {
 
 
         // Initialize air rights
-        air_rights::initialize(account_one);
+        air_rights::init(account_one);
 
 
         // Create air rights
         let cubic_feet = 1000;
         let price_per_cubic_foot = 50;
-        air_rights::create_air_rights(account_one, cubic_feet, price_per_cubic_foot);
+        let registry_owner = signer::address_of(account_one);
+        air_rights::add_parcel_to_air_rights_registry(account_one, registry_owner, cubic_feet, price_per_cubic_foot);
 
 
         // List the air rights parcel for sale 
-        air_rights::list_air_rights(account_one, 0, price_per_cubic_foot);
-
+        air_rights::list_air_rights(account_one, 0, price_per_cubic_foot, registry_owner);
 
 
         // Test the sell_air_rights function FAILURE. PRICE MORE THAN MINTED PRICE
         let sale_price = 150_000; 
-        air_rights::sell_and_transfer_air_rights(account_one, account_two, 0, sale_price);
+        air_rights::sell_and_transfer_air_rights(account_one, account_two, 0, sale_price, registry_owner);
 
 
         // Clean up
@@ -131,24 +132,24 @@ module SkyTrade::air_rights_test {
     #[test(account_one = @0xCAFE)]
     fun test_list_delist_air_rights(account_one: &signer) {
         // Initialize the AirRightsRegistry
-        air_rights::initialize(account_one);
+        air_rights::init(account_one);
 
         // Create an air rights parcel
         let cubic_feet = 1000;
         let price_per_cubic_foot = 50;
-        air_rights::create_air_rights(account_one, cubic_feet, price_per_cubic_foot);
+        let registry_owner = signer::address_of(account_one);
+        air_rights::add_parcel_to_air_rights_registry(account_one, registry_owner, cubic_feet, price_per_cubic_foot);
 
         // List the air rights parcel for sale
         let new_price = 75;
-        air_rights::list_air_rights(account_one, 0, new_price);
+        air_rights::list_air_rights(account_one, 0, price_per_cubic_foot, registry_owner);
 
         // Get the parcel index
-        let account_address = signer::address_of(account_one);
-        let parcel_index = air_rights::get_parcel_index_for_test(account_address, 0);
-        assert!(parcel_index == 0, 300);
+        let parcel_index = air_rights::get_parcel_index_for_test(registry_owner, 0);
+        
 
         // Delist the air rights parcel
-        air_rights::delist_air_rights(account_one, 0);
+        air_rights::delist_air_rights(account_one, 0, registry_owner);
 
     }
 

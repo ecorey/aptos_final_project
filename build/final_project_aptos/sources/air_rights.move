@@ -79,14 +79,23 @@ module SkyTrade::air_rights {
 
 
 
-
+    // OBJECT INTERGRATION
     const NAME: vector<u8> = b"AirRightsRegistryObject";
 
     entry fun create_object_to_hold_air_rights_registry(caller: &signer) {
 
         let caller_address = signer::address_of(caller);
         
-        let constructor_ref = object::create_named_object(caller, NAME);        
+        let constructor_ref = object::create_named_object(caller, NAME);   
+
+        // Create the AirRightsRegistry resource and store it in the object
+        let air_rights_registry = AirRightsRegistry {
+            next_id: 0,
+            parcels: vector::empty(),
+        };
+
+        let object_signer = object::generate_signer(&constructor_ref);
+        move_to(&object_signer, air_rights_registry);     
 
 
     }
@@ -98,36 +107,26 @@ module SkyTrade::air_rights {
         object_exists<0x1::object::ObjectCore>(object_address)
     }
 
-    //FUNCTIONS
-    // Initialize the contract for the caller account
-    public entry fun initialize(account: &signer) {
-
-        let registry = AirRightsRegistry {
-            next_id: 0,
-            parcels: vector::empty(),
-            
-        };
-
-        move_to(account, registry);
-
-    }
 
 
+    // Parcel is created and added to the air rights registry object
+    public entry fun add_parcel_to_air_rights_registry(caller: &signer, object_owner_address: address, cubic_feet: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry{
 
-    // Create a new air rights parcel
-    public entry fun create_air_rights(account: &signer, cubic_feet: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry {
-        let account_address = signer::address_of(account);
-        let registry = borrow_global_mut<AirRightsRegistry>(account_address);
+        let object_address = object::create_object_address(&object_owner_address, NAME);
 
-        assert!(cubic_feet > 0, 2);
-        assert!(price_per_cubic_foot > 0, 3);
+        // Ensure the AirRightsRegistry exists in the object
+        assert!(object_exists<AirRightsRegistry>(object_address), 1);
+        
+        // Borrow the AirRightsRegistry resource from the object
+        let registry = borrow_global_mut<AirRightsRegistry>(object_address);
 
+        // Create the new parcel
         let parcel_id = registry.next_id;
         registry.next_id = parcel_id + 1;
 
         let parcel = AirRightsParcel {
             id: parcel_id,
-            owner: account_address,
+            owner: signer::address_of(caller),  // The caller becomes the owner of the parcel
             cubic_feet,
             price_per_cubic_foot,
             is_listed: false,
@@ -135,50 +134,63 @@ module SkyTrade::air_rights {
 
         vector::push_back(&mut registry.parcels, parcel);
 
-
         let event = AirRightsCreatedEvent {
             parcel_id,
-            owner: account_address,
+            owner: signer::address_of(caller),
             cubic_feet,
             price_per_cubic_foot,
         };
 
         event::emit(event);
-
-
-        
     }
 
+
+
+
+
+    //FUNCTIONS
+    // Initialize the contract for the caller account
+    public fun init(account: &signer) {
+
+       create_object_to_hold_air_rights_registry(account);
+
+    }
+
+
+
+  
 
     // Sell air rights parcel
     public entry fun sell_and_transfer_air_rights(
         from: &signer, 
         buyer: &signer, 
         parcel_id: u64, 
-        provided_price: u64
+        provided_price: u64, 
+        object_owner_address: address
     ) acquires AirRightsRegistry {
-
         let from_address = signer::address_of(from);
         let buyer_address = signer::address_of(buyer);
+        let object_address = object::create_object_address(&object_owner_address, NAME);
 
-        // Verify the parcel ownership and that it is listed for sale
-        let registry = borrow_global_mut<AirRightsRegistry>(from_address);
+        // Ensure the AirRightsRegistry exists in the object
+        assert!(object_exists<AirRightsRegistry>(object_address), 1);
+
+        // Borrow the AirRightsRegistry resource from the object
+        let registry = borrow_global_mut<AirRightsRegistry>(object_address);
+
+        // Find the index of the parcel within the registry
         let index = get_parcel_index(&registry.parcels, parcel_id);
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
-
 
         // Check parcel ownership and listing status
         assert!(parcel.owner == from_address, 4);
         assert!(parcel.is_listed, 5);  
 
-
         // Calculate the expected price
         let expected_price = parcel.cubic_feet * parcel.price_per_cubic_foot;
 
-
         // Ensure the provided price matches the expected price
         assert!(provided_price == expected_price, 11);
-
 
         // Withdraw the APT coins from the buyer's account and deposit them into the seller's account
         let payment = coin::withdraw<AptosCoin>(buyer, provided_price);
@@ -188,6 +200,7 @@ module SkyTrade::air_rights {
         parcel.owner = buyer_address;
         parcel.is_listed = false;
 
+        // Emit an event indicating the parcel has been transferred
         let event = AirRightsTransferredEvent {
             from: from_address,
             to: buyer_address,
@@ -195,28 +208,40 @@ module SkyTrade::air_rights {
         };
 
         event::emit(event);
-
-
     }
 
 
 
 
 
-    // List an air rights parcel for sale
-    public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64) acquires AirRightsRegistry {
-        let account_address = signer::address_of(account);
-        let registry = borrow_global_mut<AirRightsRegistry>(account_address);
 
+    // List an air rights parcel for sale
+    public entry fun list_air_rights(account: &signer, parcel_id: u64, price_per_cubic_foot: u64, object_owner_address: address) acquires AirRightsRegistry {
+        
+        let account_address = signer::address_of(account);
+        let object_address = object::create_object_address(&object_owner_address, NAME);
+
+        // Ensure the AirRightsRegistry exists in the object
+        assert!(object_exists<AirRightsRegistry>(object_address), 1);
+
+        // Borrow the AirRightsRegistry resource from the object
+        let registry = borrow_global_mut<AirRightsRegistry>(object_address);
+
+        // Find the index of the parcel within the registry
         let index = get_parcel_index(&registry.parcels, parcel_id);
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
 
+        // Ensure the caller owns the parcel
         assert!(parcel.owner == account_address, 6);
+        
+        // Ensure the price per cubic foot is positive
         assert!(price_per_cubic_foot > 0, 7);
 
+        // Update the parcel to be listed for sale
         parcel.is_listed = true;
         parcel.price_per_cubic_foot = price_per_cubic_foot;
 
+        // Emit an event indicating the parcel has been listed
         let event = AirRightsListedEvent {
             owner: account_address,
             parcel_id,
@@ -229,27 +254,38 @@ module SkyTrade::air_rights {
 
 
     // Delist an air rights parcel
-    public entry fun delist_air_rights(account: &signer, parcel_id: u64) acquires AirRightsRegistry {
+    public entry fun delist_air_rights(account: &signer, parcel_id: u64, object_owner_address: address) acquires AirRightsRegistry {
         let account_address = signer::address_of(account);
-        let registry = borrow_global_mut<AirRightsRegistry>(account_address);
+        let object_address = object::create_object_address(&object_owner_address, NAME);
 
+        // Ensure the AirRightsRegistry exists in the object
+        assert!(object_exists<AirRightsRegistry>(object_address), 1);
+
+        // Borrow the AirRightsRegistry resource from the object
+        let registry = borrow_global_mut<AirRightsRegistry>(object_address);
+
+        // Find the index of the parcel within the registry
         let index = get_parcel_index(&registry.parcels, parcel_id);
         let parcel = vector::borrow_mut(&mut registry.parcels, index);
 
+        // Ensure the caller owns the parcel
         assert!(parcel.owner == account_address, 8);
+
+        // Ensure the parcel is currently listed
         assert!(parcel.is_listed, 9);
 
+        // Update the parcel to be delisted
         parcel.is_listed = false;
 
+        // Emit an event indicating the parcel has been delisted
         let event = AirRightsDelistedEvent {
             owner: account_address,
             parcel_id,
         };
 
         event::emit(event);
-
-
     }
+
 
    
 
@@ -258,10 +294,20 @@ module SkyTrade::air_rights {
     // TEST HELPER FUNCTIONS
     // Public function to get a parcel by its index
     #[test_only]
-    public fun get_parcel_index_for_test(account: address, parcel_id: u64): u64 acquires AirRightsRegistry {
-        let registry = borrow_global<AirRightsRegistry>(account);
+    public fun get_parcel_index_for_test(registry_owner_address: address, parcel_id: u64): u64 acquires AirRightsRegistry {
+        
+        let object_address = object::create_object_address(&registry_owner_address, NAME);
+
+        // Ensure the AirRightsRegistry exists in the object
+        assert!(object_exists<AirRightsRegistry>(object_address), 1);
+
+        // Borrow the AirRightsRegistry resource from the object
+        let registry = borrow_global<AirRightsRegistry>(object_address);
+
+        // Call the helper function to get the index of the parcel
         get_parcel_index(&registry.parcels, parcel_id)
     }
+
 
 
 
