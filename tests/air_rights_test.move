@@ -41,7 +41,7 @@ module SkyTrade::air_rights_test {
 
 
         // Initialize air rights
-        air_rights::init(account_one);
+        air_rights::test_for_init(account_one);
 
 
         // Create air rights
@@ -98,7 +98,7 @@ module SkyTrade::air_rights_test {
 
 
         // Initialize air rights
-        air_rights::init(account_one);
+        air_rights::test_for_init(account_one);
 
 
         // Create air rights
@@ -132,7 +132,7 @@ module SkyTrade::air_rights_test {
     #[test(account_one = @0xCAFE)]
     fun test_list_delist_air_rights(account_one: &signer) {
         // Initialize the AirRightsRegistry
-        air_rights::init(account_one);
+        air_rights::test_for_init(account_one);
 
         // Create an air rights parcel
         let cubic_feet = 1000;
