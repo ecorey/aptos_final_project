@@ -1,13 +1,3 @@
-// ADJUSTMENTS MADE TO CONTRACT
-// AirRightsRegistry object holds parcel data
-// AirRightsRegistry object is created in the init function and owned by contract creator
-// AirRightsRegistry is a named object and cannot be deleted
-// AirRightsRegistry object accesible through object address so users can add a parcel or sell ext.
-// Parcel is created when added to the registry
-// Updated related functions and tests
-// test_for_init function
-
-
 
 
 
